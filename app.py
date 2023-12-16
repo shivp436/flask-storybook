@@ -65,6 +65,11 @@ class RegisterForm(Form):
     confirm = PasswordField("Confirm Password")
 
 
+class LoginForm(Form):
+    email = StringField("Email", [validators.Length(min=6, max=50)])
+    password = PasswordField("Password", validators=[validators.InputRequired()])
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     form = RegisterForm(request.form)
@@ -87,6 +92,34 @@ def register():
         flash("You are now registered and can log in", "success")
         return redirect(url_for("login"))
     return render_template("register.html", form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm(request.form)
+    if request.method == "POST":
+        email = form.email.data
+        cur = mysql.connection.cursor()
+        user = cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user_data = cur.fetchone()
+        password = form.password.data
+        if not user or not user_data:  # Check for empty result or no data
+            print("no user data")
+            # Handle no data scenario
+            cur.close()
+            return render_template(
+                "login.html", form=form, error="No user found with that email"
+            )
+        password_saved = user_data["password"]
+        cur.close()
+        if sha256_crypt.verify(password, password_saved):
+            print(user)
+            session['logged_in'] = True
+            session['username'] = user.username
+            return render_template("dashboard.html")
+        else:
+            return render_template("login.html", form=form, error="Incorrect password")
+    return render_template("login.html", form=form)
 
 
 if __name__ == "__main__":

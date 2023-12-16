@@ -8,11 +8,10 @@
 			href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 		/>
 	</head>
-	<body>
+	<body class="bg-primary">
 		{% include 'includes/_navbar.html' %}
 		<div class="container">
-			{% include 'includes/_messages.html' %}
-            {% block body %}{% endblock
+			{% include 'includes/_messages.html' %} {% block body %}{% endblock
 			%}
 		</div>
 
